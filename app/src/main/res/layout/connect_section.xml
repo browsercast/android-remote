@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/connect_section"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="bottom"
+    android:focusableInTouchMode="true">
+
+    <EditText
+        android:id="@+id/qrcode_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter code here"
+        android:text="f5f64b46-17e3-4e6f-bfeb-689369714cb2"
+        android:layout_margin="10dp"/>
+    <Button
+        android:id="@+id/qrcode_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Connect"
+        android:layout_margin="10dp"
+        android:layout_below="@+id/qrcode_input"/>
+
+</RelativeLayout>
