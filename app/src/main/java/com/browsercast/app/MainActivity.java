@@ -1,31 +1,50 @@
 package com.browsercast.app;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.browsercast.app.classes.AppManager;
 import com.github.nkzawa.emitter.Emitter;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 public class MainActivity extends AppCompatActivity {
+    private static int RC_SIGN_IN = 100;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,11 +57,26 @@ public class MainActivity extends AppCompatActivity {
         // Start socket.io
         AppManager.connectSocket();
 
+        // Authentication
+        mAuth = FirebaseAuth.getInstance();
+
+        AppManager.gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.google_api_id))
+                .requestEmail()
+                .build();
+
+        AppManager.googleApiClient = new GoogleApiClient.Builder(getApplicationContext())
+                .addApi(Auth.GOOGLE_SIGN_IN_API, AppManager.gso)
+                .build();
+
+        AppManager.googleApiClient.connect();
+
         // Listen on events
         AppManager.socket.on("error", onError);
         AppManager.socket.on("disconnect", onDisconnect);
         AppManager.socket.on("join", onJoin);
         AppManager.socket.on("receive", onReceive);
+        AppManager.socket.on("peer-id-social", onReceiveSocial);
 
         // Check if user is connected to server
         if (AppManager.isConnected) {
@@ -64,7 +98,17 @@ public class MainActivity extends AppCompatActivity {
             View child = getLayoutInflater().inflate(R.layout.connect_section, content);
 
             final EditText input = child.findViewById(R.id.qrcode_input);
-            final View submit = child.findViewById(R.id.qrcode_button);
+            final Button submit = child.findViewById(R.id.qrcode_button);
+            final Button google = child.findViewById(R.id.google_button);
+
+            google.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    //googleSignOut();
+
+                    googleButtonClick();
+                }
+            });
 
             submit.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -112,6 +156,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         sendMessage("join", payload);
+    }
+
+    private void googleButtonClick() {
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(AppManager.googleApiClient);
+        startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
     private Emitter.Listener onJoin = new Emitter.Listener() {
@@ -181,6 +230,20 @@ public class MainActivity extends AppCompatActivity {
                             setAudibleChanged(params);
                             break;
                     }
+                }
+            });
+        }
+    };
+
+    private Emitter.Listener onReceiveSocial = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    String data = (String) args[0];
+
+                    submitButtonClick(data);
                 }
             });
         }
@@ -412,26 +475,58 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+    private void handleSignInResult(FirebaseUser user) {
+        if (user != null) {
+            AppManager.socket.emit("joined-id-social-check", user.getUid());
+        }
+    }
+
+    private void googleSignOut() {
+        if (Auth.GoogleSignInApi != null) {
+            Auth.GoogleSignInApi.signOut(AppManager.googleApiClient).setResultCallback(new ResultCallback<Status>() {
+                @Override
+                public void onResult(@NonNull Status status) {
+                    FirebaseAuth.getInstance().signOut();
+                    finish();
+                }
+            });
+        }
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
+        if (requestCode == RC_SIGN_IN) {
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            try {
+                // Google Sign In was successful, authenticate with Firebase
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                firebaseAuthWithGoogle(account);
+            } catch (ApiException e) {
+                // Google Sign In failed, update UI appropriately
+                Toast.makeText(getApplicationContext(), "Google connect failed", Toast.LENGTH_LONG);
+            }
         }
+    }
 
-        return super.onOptionsItemSelected(item);
+    private void firebaseAuthWithGoogle(GoogleSignInAccount account) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
+        mAuth.signInWithCredential(credential)
+            .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if (task.isSuccessful()) {
+                        // Sign in success, update UI with the signed-in user's information
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        handleSignInResult(user);
+                    } else {
+                        // If sign in fails, display a message to the user.
+                        handleSignInResult(null);
+                    }
+                }
+            });
     }
 
     @Override
