@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/connect_section"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="bottom"
+    android:clickable="true"
+    android:focusableInTouchMode="true" >
+
+    <LinearLayout
+        android:id="@+id/navigation_parent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:gravity="center">
+
+        <EditText
+            android:id="@+id/address_bar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/rounded_shape"
+            android:text="Enter url address"
+            android:padding="10dp"
+            android:textSize="12dp"
+            android:layout_margin="2dp"
+            android:maxLines="1"
+            android:inputType="textUri" />
+
+        <Button
+            android:id="@+id/cast_button"
+            android:layout_width="wrap_content"
+            android:layout_height="37dp"
+            android:text="Cast"
+            android:textSize="12dp"
+            android:background="@drawable/rounded_shape"/>
+
+        <Button
+            android:id="@+id/options_button"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:text="@string/vertical_ellipsis"
+            android:background="#ffffff"
+            style="@style/Widget.AppCompat.Button.Borderless"/>
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/webview_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:weightSum="1">
+
+        <TextView
+            android:id="@+id/back_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Back"
+            android:padding="6dp"
+            android:layout_marginHorizontal="20dp"/>
+
+        <TextView
+            android:id="@+id/forward_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Forward"
+            android:padding="5dp"
+            android:layout_toRightOf="@id/back_button"/>
+
+        <TextView
+            android:id="@+id/refresh_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Refresh"
+            android:layout_marginRight="20dp"
+            android:padding="5dp"
+
+            android:layout_alignParentRight="true"/>
+    </RelativeLayout>
+
+    <WebView
+        android:id="@+id/webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+</LinearLayout>

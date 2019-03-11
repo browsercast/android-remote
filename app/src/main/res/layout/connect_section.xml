@@ -7,18 +7,21 @@
     android:gravity="bottom"
     android:focusableInTouchMode="true">
 
-    <EditText
-        android:id="@+id/qrcode_input"
+    <LinearLayout
+        android:id="@+id/devices"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter code here"
-        android:text="f5f64b46-17e3-4e6f-bfeb-689369714cb2"
-        android:layout_margin="10dp"/>
+        android:orientation="vertical"
+        android:layout_below="@id/google_button"
+        android:layout_margin="10dp">
+
+    </LinearLayout>
+
     <Button
-        android:id="@+id/qrcode_button"
+        android:id="@+id/setup_device"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Connect"
+        android:text="+ Set up a device"
         android:layout_marginHorizontal="10dp"
         android:layout_below="@+id/qrcode_input"/>
     <Button
@@ -28,8 +31,7 @@
         android:text="Connect with Google"
         android:layout_marginHorizontal="10dp"
         android:layout_marginBottom="10dp"
-        android:layout_below="@+id/qrcode_button"
-        android:background="#007bff"
-        android:textColor="#ffffff"/>
-
+        android:layout_below="@+id/setup_device"
+        android:textColor="#ffffff"
+        style="@style/Widget.AppCompat.Button.Colored"/>
 </RelativeLayout>

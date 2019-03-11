@@ -12,12 +12,13 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:text="Title of the video tab"
+        android:text="-"
         android:gravity="center_vertical"
         android:paddingLeft="15dp"/>
     <Button
         android:id="@+id/close_button"
-        android:layout_width="48dp"
+        android:minWidth="48dp"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="right"
         android:text="x"/>

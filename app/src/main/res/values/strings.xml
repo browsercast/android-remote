@@ -1,5 +1,14 @@
 <resources>
     <string name="app_name">Browser Cast</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_disconnect">Disconnect</string>
     <string name="google_api_id">209745942759-941vmddenr836nrfvhigv90ah4dv0v9r.apps.googleusercontent.com</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="tab_text_1">Remote</string>
+    <string name="tab_text_2">Tabs list</string>
+    <string name="tab_text_3">New tab</string>
+    <string name="seek1">&lt;&lt;\n 3m</string>
+    <string name="seek2">&lt;&lt;\n 1m</string>
+    <string name="seek3">1m\n&gt;&gt;</string>
+    <string name="seek4">3m\n&gt;&gt;</string>
+    <string name="vertical_ellipsis">&#8942;</string>
 </resources>
